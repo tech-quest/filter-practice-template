@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS tq_quest;
+CREATE DATABASE IF NOT EXISTS tq_filter;
 
-USE tq_quest;
+USE tq_filter;
 
 -- phpMyAdmin SQL Dump
 -- version 5.0.4
@@ -22,20 +22,20 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- データベース: `tq_quest`
+-- データベース: `tq_filter`
 --
 
 -- --------------------------------------------------------
 
 --
--- テーブルの構造 `categories`
+-- テーブルの構造 `pages`
 --
 
-CREATE TABLE `categories`
+CREATE TABLE `pages`
 (
     `id`         int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '管理番号',
-    `name`       varchar(255) NOT NULL COMMENT 'カテゴリ名',
-    `user_id`    int(11) NOT NULL COMMENT 'ユーザーID',
+    `name`       varchar(255) NOT NULL COMMENT 'メモ名',
+    `contents`   text NOT NULL COMMENT 'メモ内容',
     `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '作成日時',
     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日時'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='カテゴリ情報';
@@ -44,11 +44,10 @@ CREATE TABLE `categories`
 -- テストデータ
 --
 
-INSERT INTO `categories`(`name`, `user_id`) VALUES
-('住宅費', 1),
-('水道光熱費', 1),
-('通信料', 1),
-('交際費', 1);
+INSERT INTO `pages`(`name`, `content`) VALUES
+('ナムルの作り方', '①もやしを茹でる②胡麻油、鶏ガラ、塩をもやしにかける'),
+('ビビンバの作り方', '①米、野菜、肉などを盛り付ける②コチュジャンと蜂蜜を混ぜたソースをかける'),
+('生ハムの作り方', '①塩漬けして水抜きする②塩を洗い乾燥させる③薄くきる');
 
 -- --------------------------------------------------------
 
