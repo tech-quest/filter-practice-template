@@ -44,7 +44,7 @@ CREATE TABLE `pages`
 -- テストデータ
 --
 
-INSERT INTO `pages`(`name`, `content`) VALUES
+INSERT INTO `pages`(`name`, `contents`) VALUES
 ('ナムルの作り方', '①もやしを茹でる②胡麻油、鶏ガラ、塩をもやしにかける'),
 ('ビビンバの作り方', '①米、野菜、肉などを盛り付ける②コチュジャンと蜂蜜を混ぜたソースをかける'),
 ('生ハムの作り方', '①塩漬けして水抜きする②塩を洗い乾燥させる③薄くきる');
