@@ -2,7 +2,7 @@
 
 ## 環境構築
 
-### 1. 「tech-quest/question-template」リポジトリをテンプレートとして、自身の Github にリポジトリを作成
+### 1. 「tech-quest/filter-practice-template」リポジトリをテンプレートとして、自身の Github にリポジトリを作成
 
 <img width="1440" alt="スクリーンショット 2021-12-24 11 05 14" src="https://user-images.githubusercontent.com/63081802/147306983-b09827a5-cdbd-4061-a1c3-390496b266a8.png">
 
