@@ -52,8 +52,8 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
         </tr>
         <?php foreach ($pages as $page): ?>
           <tr>
-            <td><?php echo $page['name']; ?></td>
-            <td><?php echo $page['contents']; ?></td>
+            <td><?php echo $page['title']; ?></td>
+            <td><?php echo $page['content']; ?></td>
             <td><?php echo $page['created_at']; ?></td>
           </tr>
         <?php endforeach; ?>
