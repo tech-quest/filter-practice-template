@@ -10,24 +10,13 @@ function connect(): PDO
     return $pdo;
 }
 ?>
-<?php
-$pdo = connect();
-$pdo->query('SET NAMES UTF8');
-$sql = 'SELECT * FROM pages';
-$statement = $pdo->prepare($sql);
-$statement->bindValue(':title', $title, PDO::PARAM_STR);
-$statement->bindValue(':content', $content, PDO::PARAM_STR);
-$statement->execute();
-$pages = $statement->fetchAll(PDO::FETCH_ASSOC);
-?>
 <?php try {
-    var_dump($_GET);
     $pdo = connect();
     $pdo->query('SET NAMES UTF8');
     $search_word = $_GET['word'];
     $keyword = '%' . $search_word . '%';
-    var_dump($keyword); // $start = filter_input(INPUT_GET, 'start_date'); // $end = filter_input(INPUT_GET, 'end_date');
-    $sql = 'SELECT * FROM pages WHERE content LIKE :keyword'; // $data[] = $start; // $data[] = $end;
+    var_dump($keyword);
+    $sql = 'SELECT * FROM pages WHERE content LIKE :keyword';
     $statement->bindValue(':keyword', $keyword, PDO::PARAM_STR);
     $statement = $pdo->prepare($sql);
     $statement->execute();
@@ -65,15 +54,6 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
           <th>内容</th>
           <th>作成日時</th>
         </tr>
-        <?php if (empty($memos)): ?>
-        <?php foreach ($pages as $page): ?>
-          <tr>
-            <td><?php echo $page['title']; ?></td>
-            <td><?php echo $page['content']; ?></td>
-            <td><?php echo $page['created_at']; ?></td>
-          </tr>
-        <?php endforeach; ?>
-        <?php endif; ?>
         <?php if ($memos): ?>
         <?php foreach ($memos as $memo): ?>
           <tr>

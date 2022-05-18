@@ -1,20 +1,28 @@
 <?php
-$dbUserName = 'root';
-$dbPassword = 'password';
-$pdo = new PDO(
-    'mysql:host=mysql; dbname=tq_filter; charset=utf8',
-    $dbUserName,
-    $dbPassword
-);
+declare(strict_types=1);
+function connect(): PDO
+{
+    $dsn = 'mysql:host=mysql; dbname=tq_filter; charset=utf8';
+    $dbUserName = 'root';
+    $dbPassword = 'password';
+    $pdo = new PDO($dsn, $dbUserName, $dbPassword);
 
-$sql = 'SELECT * FROM pages';
+    return $pdo;
+}
+?>
+<!-- デフォルト設定 （全取得）-->
+<?php
+$pdo = connect();
+$pdo->query('SET NAMES UTF8');
+
+$sql =
+    'SELECT * FROM pages WHERE created_at BETWEEN "2022-05-02" AND "2022-05-07"';
 $statement = $pdo->prepare($sql);
-$statement->bindValue(':title', $title, PDO::PARAM_STR);
-$statement->bindValue(':content', $content, PDO::PARAM_STR);
 $statement->execute();
 $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
-?>
 
+// var_dump($pages);
+?>
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -52,8 +60,8 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
         </tr>
         <?php foreach ($pages as $page): ?>
           <tr>
-            <td><?php echo $page['name']; ?></td>
-            <td><?php echo $page['contents']; ?></td>
+            <td><?php echo $page['title']; ?></td>
+            <td><?php echo $page['content']; ?></td>
             <td><?php echo $page['created_at']; ?></td>
           </tr>
         <?php endforeach; ?>

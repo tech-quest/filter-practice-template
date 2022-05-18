@@ -7,7 +7,7 @@ $pdo = new PDO(
     $dbPassword
 );
 
-$sql = 'SELECT * FROM pages';
+$sql = 'SELECT * FROM pages WHERE created_at LIKE "2022-05-03%"';
 $statement = $pdo->prepare($sql);
 $statement->bindValue(':title', $title, PDO::PARAM_STR);
 $statement->bindValue(':content', $content, PDO::PARAM_STR);
@@ -28,22 +28,6 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
 <body>
   <div>
     <div>
-      <form action="index.php" method="get">
-        <div>
-          <label>
-            <input type="radio" name="order" value="desc" class="">
-            <span>新着順</span>
-          </label>
-          <label>
-            <input type="radio" name="order" value="asc" class="">
-            <span>古い順</span>
-          </label>
-        </div>
-        <button type="submit">送信</button>
-      </form>
-    </div>
-    
-    <div>
       <table border="1">
         <tr>
           <th>タイトル</th>
@@ -52,8 +36,8 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
         </tr>
         <?php foreach ($pages as $page): ?>
           <tr>
-            <td><?php echo $page['name']; ?></td>
-            <td><?php echo $page['contents']; ?></td>
+            <td><?php echo $page['title']; ?></td>
+            <td><?php echo $page['content']; ?></td>
             <td><?php echo $page['created_at']; ?></td>
           </tr>
         <?php endforeach; ?>
