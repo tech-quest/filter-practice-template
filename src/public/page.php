@@ -1,28 +1,25 @@
 <?php
 declare(strict_types=1);
-function connect(): PDO
-{
-    $dsn = 'mysql:host=mysql; dbname=tq_filter; charset=utf8';
-    $dbUserName = 'root';
-    $dbPassword = 'password';
-    $pdo = new PDO($dsn, $dbUserName, $dbPassword);
-
-    return $pdo;
-}
-?>
-<!-- デフォルト設定 （全取得）-->
-<?php
+require_once './pdoConnect.php';
 $pdo = connect();
 $pdo->query('SET NAMES UTF8');
+$startDate = filter_input(INPUT_GET, 'startDate') . ' 00:00:00';
+$endDate = filter_input(INPUT_GET, 'endDate') . ' 23:59:59';
 
-$sql =
-    'SELECT * FROM pages WHERE created_at BETWEEN "2022-05-02" AND "2022-05-07"';
+/* 日付が指定されていないときは、今日までの日付で全選択 */
+if (empty($_GET['startDate']) || empty($_GET['endDate'])) {
+    $startDate = '2022-05-03' . ' 00:00:00';
+    $endDate = date('Y-m-d') . ' 23:59:59';
+}
+
+$sql = 'SELECT * FROM pages WHERE created_at BETWEEN :startDate AND :endDate';
 $statement = $pdo->prepare($sql);
+$statement->bindValue(':startDate', $startDate, PDO::PARAM_STR);
+$statement->bindValue(':endDate', $endDate, PDO::PARAM_STR);
 $statement->execute();
 $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
-
-// var_dump($pages);
 ?>
+
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -36,22 +33,16 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
 <body>
   <div>
     <div>
-      <form action="index.php" method="get">
+      <form action="" method="GET">
+        検索したい日付の範囲を指定して下さい。
         <div>
-          <label>
-            <input type="radio" name="order" value="desc" class="">
-            <span>新着順</span>
-          </label>
-          <label>
-            <input type="radio" name="order" value="asc" class="">
-            <span>古い順</span>
-          </label>
+        検索開始日
+        <input name="startDate" type="date" />
+        検索終了日
+        <input name="endDate" type="date" />
         </div>
         <button type="submit">送信</button>
       </form>
-    </div>
-    
-    <div>
       <table border="1">
         <tr>
           <th>タイトル</th>

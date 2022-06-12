@@ -1,16 +1,7 @@
 <?php
 declare(strict_types=1);
-function connect(): PDO
-{
-    $dsn = 'mysql:host=mysql; dbname=tq_filter; charset=utf8';
-    $dbUserName = 'root';
-    $dbPassword = 'password';
-    $pdo = new PDO($dsn, $dbUserName, $dbPassword);
-
-    return $pdo;
-}
-?>
-<?php try {
+require_once './pdoConnect.php';
+try {
     $pdo = connect();
     $pdo->query('SET NAMES UTF8');
     $sql = 'SELECT * FROM pages ORDER BY created_at';
@@ -26,7 +17,8 @@ function connect(): PDO
     $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo 'DB接続エラー' . $e->getMessage();
-} ?>
+}
+?>
 
 <!DOCTYPE html>
 <html lang="ja">

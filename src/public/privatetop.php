@@ -1,56 +1,51 @@
 <?php
 declare(strict_types=1);
-function connect(): PDO
-{
-    $dsn = 'mysql:host=mysql; dbname=tq_filter; charset=utf8';
-    $dbUserName = 'root';
-    $dbPassword = 'password';
-    $pdo = new PDO($dsn, $dbUserName, $dbPassword);
+require_once './pdoConnect.php';
+$pdo = connect();
+$pdo->query('SET NAMES UTF8');
+$startDate = filter_input(INPUT_GET, 'date') . ' 00:00:00';
+$endDate = filter_input(INPUT_GET, 'date') . ' 23:59:59';
 
-    return $pdo;
+if (isset($_GET['search'])) {
+    $title = '%' . $_GET['search'] . '%';
+    $content = '%' . $_GET['search'] . '%';
+} else {
+    $title = '%%';
+    $content = '%%';
 }
-?>
-<!-- デフォルト設定 （全取得）-->
-<?php try {
-    $pdo = connect();
-    $pdo->query('SET NAMES UTF8');
-    $sql = 'SELECT * FROM pages ORDER BY created_at';
-    if ($_GET['order'] === 'desc') {
-        //降順に並び替えるSQL文に変更
-        $sql = $sql . ' DESC';
-    } elseif ($_GET['order'] === 'asc') {
-        //昇順に並び替えるSQL文に変更
-        $sql = $sql . ' ASC';
-    }
-    $statement = $pdo->prepare($sql);
-    $statement->execute();
-    $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo 'DB接続エラー' . $e->getMessage();
-} ?>
 
-<!-- 検索されたものの取得 -->
-<?php try {
-    $pdo = connect();
-    $pdo->query('SET NAMES UTF8');
-    $search_word = $_GET['word'];
-    $search_date = $_GET['date'];
-    $sql =
-        "SELECT * FROM pages WHERE content LIKE '%" .
-        $search_word .
-        "%' AND created_at LIKE '%" .
-        $search_date .
-        "%' OR title LIKE '%" .
-        $search_word .
-        "%' AND created_at LIKE '%" .
-        $search_date .
-        "%'";
-    $statement = $pdo->prepare($sql);
-    $statement->execute();
-    $memos = $statement->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo 'DB接続エラー' . $e->getMessage();
-} ?>
+if (empty($_GET['date'])) {
+    $startDate = '2022-05-03' . ' 00:00:00';
+    $endDate = date('Y-m-d') . ' 23:59:59';
+}
+
+$sql = <<<EOF
+  SELECT
+    *
+  FROM
+    pages
+  WHERE
+    (title LIKE :title OR content LIKE :content)
+  AND 
+    (created_at BETWEEN :startDate AND :endDate)
+EOF;
+
+if ($_GET['order'] === 'desc') {
+    //降順に並び替えるSQL文に変更
+    $sql = $sql . 'ORDER BY created_at DESC';
+} elseif ($_GET['order'] === 'asc') {
+    //昇順に並び替えるSQL文に変更
+    $sql = $sql . 'ORDER BY created_at ASC';
+}
+
+$statement = $pdo->prepare($sql);
+$statement->bindValue(':title', $title, PDO::PARAM_STR);
+$statement->bindValue(':content', $content, PDO::PARAM_STR);
+$statement->bindValue(':startDate', $startDate, PDO::PARAM_STR);
+$statement->bindValue(':endDate', $endDate, PDO::PARAM_STR);
+$statement->execute();
+$pages = $statement->fetchAll(PDO::FETCH_ASSOC);
+?>
 
 <!DOCTYPE html>
 <html lang="ja">
@@ -64,14 +59,16 @@ function connect(): PDO
 
 <body>
   <div>
+    
     <div>
-    <form action="" method="GET">
-      <input type="text" name="word" placeholder="Search..."/>
-      <input type="text" name="date" placeholder="2022-05-04" >
-      <input type="submit" value="検索"/>
-    </form>
-      <form action="" method="GET">
+      <form action="privatetop.php" method="get">
+        <!-- 検索ワード入力欄生成 -->
+      <input name="search" type="text" value="<?php echo $_GET['search'] ??
+          ''; ?>" placeholder="キーワードを入力" />
+      <!-- type="date" ユーザーに日付を入力させる入力欄生成 -->
+      <input name="date" type="date" />
         <div>
+          <!-- 新着順のラジオボタン生成 -->
           <label>
             <input type="radio" name="order" value="desc" class=""
             <?php if (!isset($_GET['order']) || $_GET['order'] == 'desc') {
@@ -87,7 +84,7 @@ function connect(): PDO
             <span>古い順</span>
           </label>
         </div>
-        <input type="submit" value="並び替え">
+        <button type="submit">送信</button>
       </form>
     </div>
     
@@ -98,7 +95,6 @@ function connect(): PDO
           <th>内容</th>
           <th>作成日時</th>
         </tr>
-        <?php if (!isset($_GET['word']) && !isset($_GET['date'])): ?>
         <?php foreach ($pages as $page): ?>
           <tr>
             <td><?php echo $page['title']; ?></td>
@@ -106,16 +102,6 @@ function connect(): PDO
             <td><?php echo $page['created_at']; ?></td>
           </tr>
         <?php endforeach; ?>
-        <?php endif; ?>
-        <?php if (isset($_GET['word'])): ?>
-        <?php foreach ($memos as $memo): ?>
-          <tr>
-            <td><?php echo $memo['title']; ?></td>
-            <td><?php echo $memo['content']; ?></td>
-            <td><?php echo $memo['created_at']; ?></td>
-          </tr>
-        <?php endforeach; ?>
-        <?php endif; ?>
       </table>
     </div>
   </div>
