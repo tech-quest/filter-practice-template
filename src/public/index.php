@@ -1,18 +1,23 @@
 <?php
-$dbUserName = 'root';
-$dbPassword = 'password';
-$pdo = new PDO(
-    'mysql:host=mysql; dbname=tq_filter; charset=utf8',
-    $dbUserName,
-    $dbPassword
-);
-
-$sql = 'SELECT * FROM pages';
-$statement = $pdo->prepare($sql);
-$statement->bindValue(':title', $title, PDO::PARAM_STR);
-$statement->bindValue(':content', $content, PDO::PARAM_STR);
-$statement->execute();
-$pages = $statement->fetchAll(PDO::FETCH_ASSOC);
+declare(strict_types=1);
+require_once './pdoConnect.php';
+try {
+    $pdo = connect();
+    $pdo->query('SET NAMES UTF8');
+    $sql = 'SELECT * FROM pages ORDER BY created_at';
+    if ($_GET['order'] === 'desc') {
+        //降順に並び替えるSQL文に変更
+        $sql = $sql . ' DESC';
+    } elseif ($_GET['order'] === 'asc') {
+        //昇順に並び替えるSQL文に変更
+        $sql = $sql . ' ASC';
+    }
+    $statement = $pdo->prepare($sql);
+    $statement->execute();
+    $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo 'DB接続エラー' . $e->getMessage();
+}
 ?>
 
 <!DOCTYPE html>
@@ -28,19 +33,25 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
 <body>
   <div>
     <div>
-      <form action="index.php" method="get">
+    <form action="" method="GET">
         <div>
           <label>
-            <input type="radio" name="order" value="desc" class="">
+            <input type="radio" name="order" value="desc" class=""
+            <?php if (!isset($_GET['order']) || $_GET['order'] == 'desc') {
+                echo 'checked';
+            } ?>>
             <span>新着順</span>
           </label>
           <label>
-            <input type="radio" name="order" value="asc" class="">
+            <input type="radio" name="order" value="asc" class=""
+            <?php if (isset($_GET['order']) && $_GET['order'] != 'desc') {
+                echo 'checked';
+            } ?>>
             <span>古い順</span>
           </label>
         </div>
-        <button type="submit">送信</button>
-      </form>
+        <input type="submit" value="並び替え">
+    </form>
     </div>
     
     <div>
@@ -52,8 +63,8 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
         </tr>
         <?php foreach ($pages as $page): ?>
           <tr>
-            <td><?php echo $page['name']; ?></td>
-            <td><?php echo $page['contents']; ?></td>
+            <td><?php echo $page['title']; ?></td>
+            <td><?php echo $page['content']; ?></td>
             <td><?php echo $page['created_at']; ?></td>
           </tr>
         <?php endforeach; ?>
