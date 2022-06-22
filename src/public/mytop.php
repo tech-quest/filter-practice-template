@@ -1,34 +1,18 @@
 <?php
-declare(strict_types=1);
-require_once './pdoConnect.php';
-try {
-    $pdo = connect();
-    $pdo->query('SET NAMES UTF8');
+$dbUserName = 'root';
+$dbPassword = 'password';
+$pdo = new PDO(
+    'mysql:host=mysql; dbname=tq_filter; charset=utf8',
+    $dbUserName,
+    $dbPassword
+);
 
-    if (isset($_GET['word']) && isset($_GET['date'])) {
-        $search_word = $_GET['word'];
-        $search_date = $_GET['date'];
-    } else {
-        $search_word = '%%';
-        $search_date = '%%';
-    }
-
-    $sql =
-        "SELECT * FROM pages WHERE content LIKE '%" .
-        $search_word .
-        "%' AND created_at LIKE '%" .
-        $search_date .
-        "%' OR title LIKE '%" .
-        $search_word .
-        "%' AND created_at LIKE '%" .
-        $search_date .
-        "%'";
-    $statement = $pdo->prepare($sql);
-    $statement->execute();
-    $memos = $statement->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo 'DB接続エラー' . $e->getMessage();
-}
+$sql = 'SELECT * FROM pages';
+$statement = $pdo->prepare($sql);
+$statement->bindValue(':title', $title, PDO::PARAM_STR);
+$statement->bindValue(':content', $content, PDO::PARAM_STR);
+$statement->execute();
+$pages = $statement->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -44,14 +28,21 @@ try {
 <body>
   <div>
     <div>
-    <form action="" method="GET">
-      <input type="text" name="word" placeholder="Search..."/>
-      <input type="date" name="date" placeholder="2022-05-04">
+      <form action="index.php" method="get">
+        <div>
+          <label>
+            <input type="radio" name="order" value="desc" class="">
+            <span>新着順</span>
+          </label>
+          <label>
+            <input type="radio" name="order" value="asc" class="">
+            <span>古い順</span>
+          </label>
+        </div>
+        <button type="submit">送信</button>
+      </form>
     </div>
-    <input type="submit" value="検索"/>
-    </form>
-  </div>
-    
+
     <div>
       <table border="1">
         <tr>
@@ -59,11 +50,11 @@ try {
           <th>内容</th>
           <th>作成日時</th>
         </tr>
-        <?php foreach ($memos as $memo): ?>
+        <?php foreach ($pages as $page): ?>
           <tr>
-            <td><?php echo $memo['title']; ?></td>
-            <td><?php echo $memo['content']; ?></td>
-            <td><?php echo $memo['created_at']; ?></td>
+            <td><?php echo $page['name']; ?></td>
+            <td><?php echo $page['contents']; ?></td>
+            <td><?php echo $page['created_at']; ?></td>
           </tr>
         <?php endforeach; ?>
       </table>

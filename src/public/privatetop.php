@@ -1,48 +1,17 @@
 <?php
-declare(strict_types=1);
-require_once './pdoConnect.php';
-$pdo = connect();
-$pdo->query('SET NAMES UTF8');
-$startDate = filter_input(INPUT_GET, 'date') . ' 00:00:00';
-$endDate = filter_input(INPUT_GET, 'date') . ' 23:59:59';
+$dbUserName = 'root';
+$dbPassword = 'password';
+$pdo = new PDO(
+    'mysql:host=mysql; dbname=tq_filter; charset=utf8',
+    $dbUserName,
+    $dbPassword
+);
 
-if (isset($_GET['search'])) {
-    $title = '%' . $_GET['search'] . '%';
-    $content = '%' . $_GET['search'] . '%';
-} else {
-    $title = '%%';
-    $content = '%%';
-}
-
-if (empty($_GET['date'])) {
-    $startDate = '2022-05-03' . ' 00:00:00';
-    $endDate = date('Y-m-d') . ' 23:59:59';
-}
-
-$sql = <<<EOF
-  SELECT
-    *
-  FROM
-    pages
-  WHERE
-    (title LIKE :title OR content LIKE :content)
-  AND 
-    (created_at BETWEEN :startDate AND :endDate)
-EOF;
-
-if ($_GET['order'] === 'desc') {
-    //降順に並び替えるSQL文に変更
-    $sql = $sql . 'ORDER BY created_at DESC';
-} elseif ($_GET['order'] === 'asc') {
-    //昇順に並び替えるSQL文に変更
-    $sql = $sql . 'ORDER BY created_at ASC';
-}
-
+$sql = 'SELECT * FROM pages';
 $statement = $pdo->prepare($sql);
 $statement->bindValue(':title', $title, PDO::PARAM_STR);
 $statement->bindValue(':content', $content, PDO::PARAM_STR);
-$statement->bindValue(':startDate', $startDate, PDO::PARAM_STR);
-$statement->bindValue(':endDate', $endDate, PDO::PARAM_STR);
+
 $statement->execute();
 $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -59,28 +28,17 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
   <div>
-    
+
     <div>
-      <form action="privatetop.php" method="get">
-        <!-- 検索ワード入力欄生成 -->
-      <input name="search" type="text" value="<?php echo $_GET['search'] ??
-          ''; ?>" placeholder="キーワードを入力" />
-      <!-- type="date" ユーザーに日付を入力させる入力欄生成 -->
-      <input name="date" type="date" />
+      <form action="index.php" method="get">
         <div>
-          <!-- 新着順のラジオボタン生成 -->
+
           <label>
-            <input type="radio" name="order" value="desc" class=""
-            <?php if (!isset($_GET['order']) || $_GET['order'] == 'desc') {
-                echo 'checked';
-            } ?>>
+            <input type="radio" name="order" value="desc" class="">
             <span>新着順</span>
           </label>
           <label>
-            <input type="radio" name="order" value="asc" class=""
-            <?php if (isset($_GET['order']) && $_GET['order'] != 'desc') {
-                echo 'checked';
-            } ?>>
+            <input type="radio" name="order" value="asc" class="">
             <span>古い順</span>
           </label>
         </div>
@@ -97,8 +55,8 @@ $pages = $statement->fetchAll(PDO::FETCH_ASSOC);
         </tr>
         <?php foreach ($pages as $page): ?>
           <tr>
-            <td><?php echo $page['title']; ?></td>
-            <td><?php echo $page['content']; ?></td>
+            <td><?php echo $page['name']; ?></td>
+            <td><?php echo $page['contents']; ?></td>
             <td><?php echo $page['created_at']; ?></td>
           </tr>
         <?php endforeach; ?>
